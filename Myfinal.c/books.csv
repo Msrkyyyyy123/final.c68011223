@@ -1,0 +1,16 @@
+BookTitle,Author,Publisher,Price
+C Programming,Brian W. Kernighan,Pearson,400
+Data Structures,Mark Allen Weiss,Addison-Wesley,500
+Algorithm Design,Jon Kleinberg,Pearson,650
+Starting C,John Smith,TechBooks,350
+Design Patterns,Erich Gamma,Addison-Wesley,720
+The C++ Programming Language,Bjarne Stroustrup,Addison-Wesley,680
+Code Complete,Steve McConnell,Microsoft Press,800
+Clean Code,Robert C. Martin,Prentice Hall,620
+The Mythical Man-Month,Frederick Brooks,Addison-Wesley,580
+Refactoring,Martin Fowler,Addison-Wesley,750
+Introduction to Algorithms,Thomas H. Cormen,MIT Press,950
+Computer Networks,Andrew S. Tanenbaum,Prentice Hall,780
+Operating System Concepts,Abraham Silberschatz,Wiley,850
+Database System Concepts,Henry F. Korth,McGraw-Hill,820
+Discrete Mathematics,Kenneth H. Rosen,McGraw-Hill,600
