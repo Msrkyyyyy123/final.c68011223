@@ -15,7 +15,7 @@ void show_menu() {
 
 void show_all_books() {
     FILE *file = fopen("books.csv", "r");  
-    char line[200];
+    char line[1000];
 
     if (file == NULL) {
         printf("ไม่พบไฟล์ books.csv\n");
@@ -59,6 +59,7 @@ void add_book() {
     printf("เพิ่มหนังสือใหม่เรียบร้อย!\n");
 }
 
+
 void search_book() {
     FILE *file = fopen("books.csv", "r");
     if (file == NULL) {
@@ -67,10 +68,10 @@ void search_book() {
     }
 
     char keyword[100];
-    char line[200];
+    char line[1000];
     int found = 0;
 
-    printf("กรอกชื่อหนังสือหรือผู้แต่งที่ต้องการค้นหา: ");
+    printf("กรอกชื่อหนังสือที่ต้องการค้นหา: ");
     scanf(" %[^\n]", keyword);  
 
     printf("\n=== ผลการค้นหา \"%s\" ===\n", keyword);
@@ -96,45 +97,215 @@ void search_book() {
     fclose(file);
 }
 
-void delete_book() {
-    FILE *file = fopen("books.csv", "r");
-    FILE *temp = fopen("temp.csv", "w");
 
-    if (file == NULL || temp == NULL) {
-        printf("ไม่สามารถเปิดไฟล์ได้\n");
+void update_book() {
+    FILE *file = fopen("books.csv", "r");
+    if (file == NULL) {
+        printf("ไม่สามารถเปิดไฟล์ books.csv ได้\n");
         return;
     }
 
-    char booktitle[100];
-    char line[200];
-    int found = 0;
-
-    printf("กรอกชื่อหนังสือที่ต้องการลบ: ");
-    scanf(" %[^\n]", booktitle);
+    const int MAX = 1000;
+    char titles[MAX][100], authors[MAX][100], publishers[MAX][100], prices[MAX][20];
+    char line[1000];
+    int count = 0;
 
     while (fgets(line, sizeof(line), file)) {
-        char title[100], author[100], publisher[100], price[20];
-
-        if (sscanf(line, "%99[^,],%99[^,],%99[^,],%19[^\n]", title, author, publisher, price) == 4) {
-            if (strcmp(title, booktitle) != 0) {
-                fprintf(temp, "%s,%s,%s,%s\n", title, author, publisher, price);
-            } else {
-                found = 1; 
-            }
+        if (sscanf(line, "%99[^,],%99[^,],%99[^,],%19[^\r\n]",
+                   titles[count], authors[count], publishers[count], prices[count]) == 4) {
+            count++;
+            if (count >= MAX) break;
         }
     }
-
     fclose(file);
-    fclose(temp);
 
-    remove("books.csv");           
-    rename("temp.csv", "books.csv"); 
+    if (count == 0) {
+        printf("ไฟล์ว่างหรือไม่มีข้อมูลใน books.csv\n");
+        return;
+    }
 
-    if (found)
-        printf("ลบหนังสือ \"%s\" เรียบร้อย!\n", booktitle);
-    else
-        printf("ไม่พบหนังสือ \"%s\" ในระบบ\n", booktitle);
+    while (1) {
+        char keyword[100];
+        printf("กรอกชื่อหนังสือที่ต้องการเปลี่ยนราคาหรือคีย์เวิร์ดที่จะค้นหา (พิมพ์ 0 เพื่อยกเลิก): ");
+        scanf(" %[^\n]", keyword);
+
+        if (strcmp(keyword, "0") == 0) {
+            printf("ยกเลิกการเปลี่ยนราคา\n");
+            return;
+        }
+
+        int matches[MAX];
+        int matchCount = 0;
+        for (int i = 0; i < count; i++) {
+            if (strstr(titles[i], keyword) != NULL || strstr(authors[i], keyword) != NULL) {
+                matches[matchCount++] = i;
+            }
+        }
+
+        if (matchCount == 0) {
+            printf("ไม่พบหนังสือที่ตรงกับ \"%s\" กรุณาลองใหม่\n", keyword);
+            continue;
+        }
+
+        printf("พบ %d รายการ:\n", matchCount);
+        for (int j = 0; j < matchCount; j++) {
+            int idx = matches[j];
+            printf("%d. %s | %s | %s | %s\n",
+                   j + 1, titles[idx], authors[idx], publishers[idx], prices[idx]);
+        }
+
+        int sel;
+        printf("เลือกหมายเลขหนังสือที่จะเปลี่ยนราคา (1-%d) หรือ 0 เพื่อยกเลิก: ", matchCount);
+        if (scanf("%d", &sel) != 1 || sel < 0 || sel > matchCount) {
+            printf("ตัวเลือกไม่ถูกต้อง กรุณาลองใหม่\n");
+            while (getchar() != '\n'); 
+            continue;
+        }
+
+        if (sel == 0) {
+            printf("ยกเลิกการเปลี่ยนราคา\n");
+            return;
+        }
+
+        int idx = matches[sel - 1];
+        printf("คุณต้องการเปลี่ยนราคาหนังสือ \"%s\" (จากราคา: %s) เป็นราคาเท่าไหร่: ", 
+               titles[idx], prices[idx]);
+
+        char newPrice[20];
+        scanf(" %[^\n]", newPrice);
+        strcpy(prices[idx], newPrice); 
+
+        file = fopen("books.csv", "w");
+        if (file == NULL) {
+            printf("ไม่สามารถเขียนไฟล์ books.csv ได้\n");
+            return;
+        }
+        for (int i = 0; i < count; i++) {
+            fprintf(file, "%s,%s,%s,%s\n", titles[i], authors[i], publishers[i], prices[i]);
+        }
+        fclose(file);
+
+        printf("เปลี่ยนราคาหนังสือ \"%s\" เรียบร้อย!\n", titles[idx]);
+        
+        return;
+    }
 }
+
+
+void delete_book() {
+    FILE *file = fopen("books.csv", "r");
+    if (file == NULL) {
+        printf("ไม่สามารถเปิดไฟล์ books.csv ได้\n");
+        return;
+    }
+
+    const int MAX = 1000;
+    char titles[MAX][100], authors[MAX][100], publishers[MAX][100], prices[MAX][20];
+    char line[512];
+    int count = 0;
+
+    while (fgets(line, sizeof(line), file)) {
+        if (sscanf(line, "%99[^,],%99[^,],%99[^,],%19[^\r\n]",
+                   titles[count], authors[count], publishers[count], prices[count]) == 4) {
+            count++;
+            if (count >= MAX) break;
+        }
+    }
+    fclose(file);
+
+    if (count == 0) {
+        printf("ไฟล์ว่างหรือไม่มีข้อมูลใน books.csv\n");
+        return;
+    }
+
+    while (1) {
+        char keyword[100];
+        printf("กรอกชื่อหนังสือที่ต้องการลบหรือคีย์เวิร์ดที่จะค้นหา (พิมพ์ 0 เพื่อยกเลิก): ");
+        scanf(" %[^\n]", keyword);
+
+        if (strcmp(keyword, "0") == 0) {
+            printf("ยกเลิกการลบ\n");
+            return;
+        }
+
+        int matches[MAX];
+        int matchCount = 0;
+        for (int i = 0; i < count; i++) {
+            if (strcmp(titles[i], "BookTitle") == 0) continue; 
+            if (strstr(titles[i], keyword) != NULL || strstr(authors[i], keyword) != NULL) {
+                matches[matchCount++] = i;
+            }
+        }
+
+        if (matchCount == 0) {
+            printf("ไม่พบหนังสือที่ตรงกับ \"%s\" กรุณาลองใหม่\n", keyword);
+            continue; 
+        }
+
+        printf("พบ %d รายการ:\n", matchCount);
+        for (int j = 0; j < matchCount; j++) {
+            int idx = matches[j];
+            printf("%d. %s | %s | %s | %s\n",
+                   j + 1, titles[idx], authors[idx], publishers[idx], prices[idx]);
+        }
+
+        int sel;
+        printf("เลือกหมายเลขหนังสือที่จะลบ (1-%d) หรือ 0 เพื่อยกเลิก: ", matchCount);
+        if (scanf("%d", &sel) != 1) {
+            int ch;
+            while ((ch = getchar()) != '\n' && ch != EOF);
+            printf("ตัวเลือกไม่ถูกต้อง กรุณาลองใหม่\n");
+            continue;
+        }
+
+        int ch; while ((ch = getchar()) != '\n' && ch != EOF);
+
+        if (sel == 0) {
+            printf("ยกเลิกการลบ\n");
+            return;
+        }
+        if (sel < 1 || sel > matchCount) {
+            printf("เลือกนอกช่วงที่กำหนด กรุณาลองใหม่\n");
+            continue;
+        }
+
+        int deleteIdx = matches[sel - 1];
+
+        int confirm;
+        printf("คุณต้องการลบหนังสือ \"%s\" (ผู้แต่ง: %s) ใช่หรือไม่? 1=ใช่  2=ไม่: ",
+               titles[deleteIdx], authors[deleteIdx]);
+        if (scanf("%d", &confirm) != 1) {
+            while ((ch = getchar()) != '\n' && ch != EOF);
+            printf("ตัวเลือกไม่ถูกต้อง\n");
+            continue;
+        }
+        while ((ch = getchar()) != '\n' && ch != EOF);
+
+        if (confirm != 1) {
+            printf("ยกเลิกการลบ\n");
+            return;
+        }
+
+        FILE *temp = fopen("temp.csv", "w");
+        if (temp == NULL) {
+            printf("ไม่สามารถสร้างไฟล์ temp.csv ได้\n");
+            return;
+        }
+
+        for (int i = 0; i < count; i++) {
+            if (i == deleteIdx) continue; 
+            fprintf(temp, "%s,%s,%s,%s\n", titles[i], authors[i], publishers[i], prices[i]);
+        }
+        fclose(temp);
+
+        remove("books.csv");
+        rename("temp.csv", "books.csv");
+
+        printf("ลบหนังสือ \"%s\" เรียบร้อย!\n", titles[deleteIdx]);
+        return;
+    } 
+}
+
 
 int main() {
     int choice;
@@ -154,7 +325,7 @@ int main() {
                 search_book();
                 break;
             case 4:
-                printf("คุณเลือก: อัปเดตราคา\n");
+                update_book();
                 break;
             case 5:
                 delete_book();
@@ -169,4 +340,4 @@ int main() {
     } while(choice != 0);
 
     return 0;
-}
+}   
