@@ -1,12 +1,24 @@
-HOW TO COMPLY
+HOW TO COMPLY IN  book.c 
 
-    PS C:\Users\uSEr\OneDrive\Documents\Myfinal.c> chcp 65001        
-    Active code page: 65001
-    PS C:\Users\uSEr\OneDrive\Documents\Myfinal.c> ./book    
+    PS C:\Users\uSEr\OneDrive\Documents\Myfinal.c>      chcp 65001   
+    PS C:\Users\uSEr\OneDrive\Documents\Myfinal.c>      ./book    
 
     why [chcp 65001] ? ... เพราะว่าไฟล์ของผมเป็นภาษา "UTF-8" แต่ PowerShell เป็นภาษา "CP874" 
     ซึ่งทั้งสองอย่างคนละภาษากันเลยไม่รู้เรื่อง จึงต้องสั่งมันว่า "chcp 65001" เหมือนเป็นตัวเชื่อมกัน  
    
+HOW TO COMPLY IN unit_test.c 
+
+    PS C:\Users\uSEr\OneDrive\Documents\Myfinal.c> 
+    
+        >> gcc test/unit_test.c -o test/unit_test
+        >> .\test\unit_test.exe
+
+HOW TO COMPLY IN e2e_test.c
+
+    PS C:\Users\uSEr\OneDrive\Documents\Myfinal.c> 
+        
+        >> gcc test/e2e_test.c -o test/e2e_test  
+        >> .\test\e2e_test.exe 
 
 ---------โจทย์ที่ผมได้รับ------------
 
