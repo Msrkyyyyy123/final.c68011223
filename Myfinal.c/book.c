@@ -57,6 +57,8 @@ void add_book() {
 
     fclose(file);
     printf("เพิ่มหนังสือใหม่เรียบร้อย!\n");
+
+    
 }
 
 
@@ -306,7 +308,7 @@ void delete_book() {
     } 
 }
 
-
+#ifndef UNIT_TEST
 int main() {
     int choice;
 
@@ -341,3 +343,4 @@ int main() {
 
     return 0;
 }   
+#endif
